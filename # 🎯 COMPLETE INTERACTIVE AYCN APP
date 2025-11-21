@@ -1,0 +1,531 @@
+# 🎯 COMPLETE INTERACTIVE AYCN APP
+# Run this in ONE Colab cell and interact with all features!
+
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+import matplotlib.pyplot as plt
+import numpy as np
+
+print("🚀 AYCN INTERACTIVE APP LAUNCHED!")
+print("👆 Click the buttons below to explore features")
+
+class InteractiveAYCN:
+    def __init__(self):
+        self.users = []
+        self.carbon_data = []
+        self.setup_dashboard()
+
+    def setup_dashboard(self):
+        # Create main navigation
+        self.create_navigation()
+
+    def create_navigation(self):
+        # Main title
+        title = widgets.HTML("<h1 style='color: #2E7D32;'>🌱 ASEAN Youth Carbon Network</h1>")
+
+        # Navigation buttons
+        dashboard_btn = widgets.Button(description="📊 Dashboard", layout=widgets.Layout(width='150px', height='40px'))
+        tracker_btn = widgets.Button(description="🌿 Carbon Tracker", layout=widgets.Layout(width='150px', height='40px'))
+        challenges_btn = widgets.Button(description="🏆 Challenges", layout=widgets.Layout(width='150px', height='40px'))
+        map_btn = widgets.Button(description="🗺️ ASEAN Map", layout=widgets.Layout(width='150px', height='40px'))
+        learning_btn = widgets.Button(description="📚 Learn", layout=widgets.Layout(width='150px', height='40px'))
+
+        # Output area for content
+        self.content_output = widgets.Output()
+
+        # Button actions
+        dashboard_btn.on_click(lambda b: self.show_dashboard())
+        tracker_btn.on_click(lambda b: self.show_carbon_tracker())
+        challenges_btn.on_click(lambda b: self.show_challenges())
+        map_btn.on_click(lambda b: self.show_asean_map())
+        learning_btn.on_click(lambda b: self.show_learning())
+
+        # Display navigation
+        nav_bar = widgets.HBox([dashboard_btn, tracker_btn, challenges_btn, map_btn, learning_btn])
+        display(widgets.VBox([title, nav_bar, self.content_output]))
+
+        # Show initial dashboard
+        self.show_dashboard()
+
+    def show_dashboard(self):
+        with self.content_output:
+            clear_output()
+
+            # Create dashboard widgets
+            print("📊 AYCN PERSONAL DASHBOARD")
+            print("=" * 40)
+
+            # User stats
+            stats_html = """
+            <div style='background: #E8F5E8; padding: 20px; border-radius: 10px; margin: 10px 0;'>
+                <h3>👤 Your Sustainability Profile</h3>
+                <p>🏆 <strong>Points:</strong> 150</p>
+                <p>🌍 <strong>Carbon Reduced:</strong> 45 kg CO₂</p>
+                <p>🏙️ <strong>City Rank:</strong> #3 in Jakarta</p>
+                <p>📅 <strong>Active Streak:</strong> 7 days</p>
+            </div>
+            """
+            display(widgets.HTML(stats_html))
+
+            # Quick actions
+            print("\n🚀 QUICK ACTIONS:")
+            log_btn = widgets.Button(description="📝 Log Today's Carbon", button_style='success')
+            join_btn = widgets.Button(description="🎯 Join Challenge", button_style='info')
+            learn_btn = widgets.Button(description="📚 Take Eco-Course", button_style='warning')
+
+            def quick_log(b):
+                with self.content_output:
+                    clear_output()
+                    self.show_carbon_tracker()
+
+            def quick_join(b):
+                with self.content_output:
+                    clear_output()
+                    self.show_challenges()
+
+            def quick_learn(b):
+                with self.content_output:
+                    clear_output()
+                    self.show_learning()
+
+            log_btn.on_click(quick_log)
+            join_btn.on_click(quick_join)
+            learn_btn.on_click(quick_learn)
+
+            display(widgets.HBox([log_btn, join_btn, learn_btn]))
+
+            # Recent activity
+            print("\n📈 RECENT ACTIVITY:")
+            activities = [
+                "✅ Biked to work - Saved 2.5 kg CO₂",
+                "✅ Used reusable bag - Saved 0.1 kg CO₂",
+                "✅ Plant-based lunch - Saved 3.0 kg CO₂",
+                "🎯 Joined Green Commute Challenge"
+            ]
+
+            for activity in activities:
+                print(f"   {activity}")
+
+    def show_carbon_tracker(self):
+        with self.content_output:
+            clear_output()
+            print("🌿 CARBON FOOTPRINT TRACKER")
+            print("=" * 40)
+
+            # Category selection
+            category = widgets.Dropdown(
+                options=['🚗 Transport', '💡 Energy', '🍽️ Lifestyle', '🗑️ Waste'],
+                value='🚗 Transport',
+                description='Category:'
+            )
+
+            # Activity details based on category
+            activity = widgets.Dropdown(description='Activity:')
+            amount = widgets.FloatText(value=10, description='Amount:')
+            unit = widgets.Label(value='km')
+
+            def update_activities(change):
+                activities = {
+                    '🚗 Transport': ['Car travel', 'Bus travel', 'Train travel', 'Flight'],
+                    '💡 Energy': ['Electricity use', 'Cooking gas', 'Heating'],
+                    '🍽️ Lifestyle': ['Beef meal', 'Chicken meal', 'Dairy products', 'Processed food'],
+                    '🗑️ Waste': ['Plastic waste', 'Food waste', 'Electronic waste']
+                }
+                activity.options = activities[change['new']]
+
+                # Update units
+                units = {'🚗 Transport': 'km', '💡 Energy': 'kWh', '🍽️ Lifestyle': 'meals', '🗑️ Waste': 'kg'}
+                unit.value = units[change['new']]
+
+            category.observe(update_activities, names='value')
+            update_activities({'new': category.value})
+
+            # Calculate button
+            calculate_btn = widgets.Button(description="Calculate Carbon", button_style='success')
+            result_output = widgets.Output()
+
+            def calculate_carbon(b):
+                with result_output:
+                    clear_output()
+
+                    # Carbon factors
+                    factors = {
+                        'Car travel': 0.2, 'Bus travel': 0.08, 'Train travel': 0.05, 'Flight': 0.25,
+                        'Electricity use': 0.5, 'Cooking gas': 2.5, 'Heating': 2.0,
+                        'Beef meal': 3.0, 'Chicken meal': 1.5, 'Dairy products': 1.2, 'Processed food': 0.8,
+                        'Plastic waste': 2.0, 'Food waste': 1.5, 'Electronic waste': 3.0
+                    }
+
+                    carbon = amount.value * factors[activity.value]
+
+                    print(f"📊 CARBON CALCULATION:")
+                    print(f"   Activity: {activity.value}")
+                    print(f"   Amount: {amount.value} {unit.value}")
+                    print(f"   Carbon Emissions: {carbon:.2f} kg CO₂")
+                    print(f"   🌱 Environmental Impact:")
+
+                    if carbon > 5:
+                        print("      🚨 High impact - Consider alternatives")
+                    elif carbon > 2:
+                        print("      ⚠️ Moderate impact - Room for improvement")
+                    else:
+                        print("      ✅ Low impact - Great job!")
+
+            calculate_btn.on_click(calculate_carbon)
+
+            # Display form
+            display(widgets.VBox([
+                widgets.HTML("<h3>Log Your Carbon Activity</h3>"),
+                widgets.HBox([category, activity]),
+                widgets.HBox([amount, unit]),
+                calculate_btn,
+                result_output
+            ]))
+
+    def show_challenges(self):
+        with self.content_output:
+            clear_output()
+            print("🏆 ASEAN SUSTAINABILITY CHALLENGES")
+            print("=" * 45)
+
+            challenges = [
+                {
+                    'name': 'Green Commute Week',
+                    'description': 'Use sustainable transport for 7 days',
+                    'participants': 150,
+                    'progress': 75,
+                    'reward': '100 points + Eco-Badge'
+                },
+                {
+                    'name': 'Energy Saving Month',
+                    'description': 'Reduce electricity consumption by 20%',
+                    'participants': 89,
+                    'progress': 45,
+                    'reward': '150 points + Energy Star'
+                },
+                {
+                    'name': 'Plastic Free Challenge',
+                    'description': 'Avoid single-use plastics for 30 days',
+                    'participants': 120,
+                    'progress': 60,
+                    'reward': '200 points + Plastic Warrior'
+                }
+            ]
+
+            for i, challenge in enumerate(challenges, 1):
+                print(f"\n{i}. {challenge['name']}")
+                print(f"   📝 {challenge['description']}")
+                print(f"   👥 {challenge['participants']} participants")
+                print(f"   📊 {challenge['progress']}% complete")
+                print(f"   🎁 Reward: {challenge['reward']}")
+
+                join_btn = widgets.Button(description=f"Join Challenge {i}", button_style='primary')
+
+                def create_join_handler(chal_name):
+                    def join_handler(b):
+                        print(f"\n🎉 You joined {chal_name}!")
+                        print("📱 Check your dashboard for progress tracking")
+                    return join_handler
+
+                join_btn.on_click(create_join_handler(challenge['name']))
+                display(join_btn)
+
+    def show_asean_map(self):
+        with self.content_output:
+            clear_output()
+            print("🗺️ ASEAN YOUTH CARBON INDEX")
+            print("=" * 35)
+
+            # Simulated ASEAN city data
+            cities = {
+                'Jakarta': {'carbon_reduced': 180, 'participants': 45, 'rank': 1},
+                'Singapore': {'carbon_reduced': 150, 'participants': 38, 'rank': 2},
+                'Manila': {'carbon_reduced': 120, 'participants': 42, 'rank': 3},
+                'Bangkok': {'carbon_reduced': 110, 'participants': 35, 'rank': 4},
+                'Kuala Lumpur': {'carbon_reduced': 95, 'participants': 28, 'rank': 5}
+            }
+
+            print("\n🏆 CITY LEADERBOARD:")
+            for city, data in cities.items():
+                print(f"   {data['rank']}. {city}")
+                print(f"      🌱 {data['carbon_reduced']} kg CO₂ reduced")
+                print(f"      👥 {data['participants']} active participants")
+                print()
+
+            # Simple ASCII map
+            map_visual = """
+            ASEAN CARBON REDUCTION MAP:
+
+            🇹🇭 Bangkok    [██████████] 110 kg
+            🇮🇩 Jakarta    [███████████████] 180 kg
+            🇲🇾 Kuala Lumpur [████████] 95 kg
+            🇵🇭 Manila     [███████████] 120 kg
+            🇸🇬 Singapore  [████████████] 150 kg
+
+            █ = 10 kg CO₂ reduced
+            """
+            print(map_visual)
+
+    def show_learning(self):
+        with self.content_output:
+            clear_output()
+            print("📚 AYCN SUSTAINABILITY LEARNING HUB")
+            print("=" * 45)
+
+            courses = [
+                {
+                    'title': 'Carbon Footprint Basics',
+                    'duration': '15 min',
+                    'level': 'Beginner',
+                    'description': 'Understand what carbon footprint means and how to calculate it'
+                },
+                {
+                    'title': 'Sustainable Transportation',
+                    'duration': '20 min',
+                    'level': 'Intermediate',
+                    'description': 'Learn about eco-friendly travel options in ASEAN cities'
+                },
+                {
+                    'title': 'Green Energy Solutions',
+                    'duration': '25 min',
+                    'level': 'Advanced',
+                    'description': 'Explore renewable energy and efficiency practices'
+                }
+            ]
+
+            for i, course in enumerate(courses, 1):
+                print(f"\n{i}. {course['title']}")
+                print(f"   ⏱️ {course['duration']} | 🎯 {course['level']}")
+                print(f"   📖 {course['description']}")
+
+                start_btn = widgets.Button(description=f"Start Course {i}", button_style='info')
+
+                def create_course_handler(course_title):
+                    def course_handler(b):
+                        print(f"\n🎬 Starting: {course_title}")
+                        print("📚 Loading course content...")
+                        print("✅ Course completed! +25 points earned! 🎉")
+                    return course_handler
+
+                start_btn.on_click(create_course_handler(course['title']))
+                display(start_btn)
+
+# 🚀 LAUNCH THE INTERACTIVE APP!
+print("Starting AYCN Interactive App...")
+aycn_app = InteractiveAYCN()
+
+# 📊 AYCN with Session Storage
+# This stores data while Colab is running
+
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+import pandas as pd
+from datetime import datetime
+
+class AYCNWithStorage:
+    def __init__(self):
+        self.carbon_entries = []  # This acts as our database
+        self.user_profile = {}
+        self.setup_storage_app()
+
+    def setup_storage_app(self):
+        print("🗄️ AYCN with Carbon Tracking Storage")
+        print("📊 Data stored during this Colab session")
+
+        # Main interface
+        self.create_storage_interface()
+
+    def create_storage_interface(self):
+        # Navigation
+        track_btn = widgets.Button(description="📝 Track Carbon", button_style='primary')
+        view_btn = widgets.Button(description="📊 View History", button_style='info')
+        export_btn = widgets.Button(description="💾 Export Data", button_style='success')
+
+        self.storage_output = widgets.Output()
+
+        track_btn.on_click(lambda b: self.show_tracker())
+        view_btn.on_click(lambda b: self.show_history())
+        export_btn.on_click(lambda b: self.export_data())
+
+        display(widgets.HBox([track_btn, view_btn, export_btn]))
+        display(self.storage_output)
+
+        self.show_tracker()
+
+    def show_tracker(self):
+        with self.storage_output:
+            clear_output()
+            print("🌿 TRACK YOUR CARBON FOOTPRINT")
+            print("📁 Data will be stored in this session")
+            print("=" * 50)
+
+            # Tracking form
+            activity = widgets.Dropdown(
+                options=['🚗 Car travel', '🚌 Bus travel', '🚆 Train travel', '✈️ Flight',
+                        '💡 Electricity', '🔥 Cooking gas', '🍖 Meat meal', '🥤 Plastic use'],
+                description='Activity:'
+            )
+
+            amount = widgets.FloatText(value=10, description='Amount:')
+            unit = widgets.Dropdown(options=['km', 'kWh', 'meals', 'items'], description='Unit:')
+
+            notes = widgets.Text(description='Notes:', placeholder='Optional notes...')
+
+            save_btn = widgets.Button(description="💾 Save Entry", button_style='success')
+            result_output = widgets.Output()
+
+            def save_entry(b):
+                # Carbon factors
+                factors = {
+                    '🚗 Car travel': 0.2, '🚌 Bus travel': 0.08, '🚆 Train travel': 0.05,
+                    '✈️ Flight': 0.25, '💡 Electricity': 0.5, '🔥 Cooking gas': 2.5,
+                    '🍖 Meat meal': 3.0, '🥤 Plastic use': 0.1
+                }
+
+                carbon = amount.value * factors[activity.value]
+
+                # Create entry
+                entry = {
+                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    'activity': activity.value,
+                    'amount': amount.value,
+                    'unit': unit.value,
+                    'carbon_kg': carbon,
+                    'notes': notes.value
+                }
+
+                # Store in memory
+                self.carbon_entries.append(entry)
+
+                with result_output:
+                    clear_output()
+                    print("✅ ENTRY SAVED TO STORAGE!")
+                    print(f"   Activity: {activity.value}")
+                    print(f"   Carbon: {carbon:.2f} kg CO₂")
+                    print(f"   Total entries: {len(self.carbon_entries)}")
+                    print("   📊 Click 'View History' to see all entries")
+
+            save_btn.on_click(save_entry)
+
+            display(widgets.VBox([
+                widgets.HTML("<h3>Log New Carbon Activity</h3>"),
+                activity,
+                widgets.HBox([amount, unit]),
+                notes,
+                save_btn,
+                result_output
+            ]))
+
+    def show_history(self):
+        with self.storage_output:
+            clear_output()
+            print("📊 CARBON TRACKING HISTORY")
+            print(f"📅 Total entries: {len(self.carbon_entries)}")
+            print("=" * 50)
+
+            if not self.carbon_entries:
+                print("No entries yet. Start tracking your carbon footprint! 🌱")
+                return
+
+            # Convert to DataFrame for nice display
+            df = pd.DataFrame(self.carbon_entries)
+
+            # Display summary
+            total_carbon = df['carbon_kg'].sum()
+            avg_carbon = df['carbon_kg'].mean()
+
+            print(f"📈 SUMMARY:")
+            print(f"   Total Carbon Tracked: {total_carbon:.2f} kg CO₂")
+            print(f"   Average per Entry: {avg_carbon:.2f} kg CO₂")
+            print(f"   First Entry: {df['timestamp'].min()}")
+            print(f"   Latest Entry: {df['timestamp'].max()}")
+
+            # Show recent entries
+            print(f"\n📝 RECENT ENTRIES (Last 5):")
+            recent_entries = df.tail(5)
+            for _, entry in recent_entries.iterrows():
+                print(f"   📅 {entry['timestamp']}")
+                print(f"      {entry['activity']}: {entry['amount']} {entry['unit']}")
+                print(f"      🌍 {entry['carbon_kg']:.2f} kg CO₂")
+                if entry['notes']:
+                    print(f"      📝 {entry['notes']}")
+                print()
+
+            # Show chart if we have data
+            if len(self.carbon_entries) > 1:
+                import matplotlib.pyplot as plt
+
+                plt.figure(figsize=(10, 4))
+
+                # Plot carbon over time
+                df_sorted = df.sort_values('timestamp')
+                plt.plot(range(len(df_sorted)), df_sorted['carbon_kg'], marker='o', linewidth=2)
+                plt.title('Your Carbon Footprint Over Time')
+                plt.ylabel('kg CO₂')
+                plt.xlabel('Entry Number')
+                plt.grid(True, alpha=0.3)
+                plt.show()
+
+    def export_data(self):
+        with self.storage_output:
+            clear_output()
+            print("💾 EXPORT YOUR CARBON DATA")
+            print("=" * 40)
+
+            if not self.carbon_entries:
+                print("No data to export. Track some carbon first! 🌱")
+                return
+
+            df = pd.DataFrame(self.carbon_entries)
+
+            # Show data preview
+            print("📋 DATA PREVIEW:")
+            print(df.head())
+
+            # Export options
+            csv_btn = widgets.Button(description="📄 Download CSV", button_style='info')
+            excel_btn = widgets.Button(description="📊 Download Excel", button_style='success')
+            summary_btn = widgets.Button(description="📈 Show Summary", button_style='warning')
+
+            export_output = widgets.Output()
+
+            def download_csv(b):
+                with export_output:
+                    clear_output()
+                    filename = f"aycn_carbon_data_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+                    df.to_csv(filename, index=False)
+                    print(f"✅ CSV file '{filename}' created!")
+                    print("📁 You can download it from Colab's file browser")
+
+            def download_excel(b):
+                with export_output:
+                    clear_output()
+                    filename = f"aycn_carbon_data_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+                    df.to_excel(filename, index=False)
+                    print(f"✅ Excel file '{filename}' created!")
+                    print("📁 You can download it from Colab's file browser")
+
+            def show_summary(b):
+                with export_output:
+                    clear_output()
+                    print("📊 DETAILED SUMMARY:")
+                    print(f"Total entries: {len(df)}")
+                    print(f"Total carbon: {df['carbon_kg'].sum():.2f} kg CO₂")
+                    print(f"Average carbon per activity: {df['carbon_kg'].mean():.2f} kg CO₂")
+
+                    # By activity type
+                    print("\n📈 BY ACTIVITY TYPE:")
+                    activity_summary = df.groupby('activity')['carbon_kg'].sum()
+                    for activity, carbon in activity_summary.items():
+                        print(f"   {activity}: {carbon:.2f} kg CO₂")
+
+            csv_btn.on_click(download_csv)
+            excel_btn.on_click(download_excel)
+            summary_btn.on_click(show_summary)
+
+            display(widgets.HBox([csv_btn, excel_btn, summary_btn]))
+            display(export_output)
+
+# 🚀 LAUNCH THE STORAGE VERSION!
+print("Starting AYCN with Storage...")
+aycn_storage = AYCNWithStorage()
